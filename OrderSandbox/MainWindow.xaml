@@ -44,6 +44,7 @@
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
@@ -53,7 +54,12 @@
                             <Button Content="Сброс" Margin="4,0,0,0" Command="{Binding ClearSearchCommand}" />
                         </StackPanel>
 
-                        <DataGrid Grid.Row="1"
+                        <CheckBox Grid.Row="1"
+                                  Content="Только товары с остатком у хотя бы одного поставщика"
+                                  IsChecked="{Binding OnlyProductsWithStock}"
+                                  Margin="0,0,0,4" />
+
+                        <DataGrid Grid.Row="2"
                                   ItemsSource="{Binding ProductsView}"
                                   SelectedItem="{Binding SelectedProduct}"
                                   AutoGenerateColumns="False"

@@ -22,6 +22,7 @@ namespace OrderSandbox.ViewModels
 
         private string _searchText = string.Empty;
         private string _defectSearchText = string.Empty;
+        private bool _onlyProductsWithStock;
 
         private ProductModel _selectedProduct;
         private SupplierPriceItemModel _selectedSupplierItem;
@@ -67,6 +68,17 @@ namespace OrderSandbox.ViewModels
             {
                 _searchText = value;
                 RaisePropertyChanged(() => SearchText);
+            }
+        }
+
+        public bool OnlyProductsWithStock
+        {
+            get => _onlyProductsWithStock;
+            set
+            {
+                _onlyProductsWithStock = value;
+                RaisePropertyChanged(() => OnlyProductsWithStock);
+                _productsView?.Refresh();
             }
         }
 
@@ -240,7 +252,17 @@ namespace OrderSandbox.ViewModels
 
         private bool ProductFilterPredicate(object obj)
         {
-            return obj is ProductModel product && _searchService.MatchesProduct(product, SearchText);
+            if (!(obj is ProductModel product))
+                return false;
+
+            if (!_searchService.MatchesProduct(product, SearchText))
+                return false;
+
+            if (OnlyProductsWithStock &&
+                !_allPriceItems.Any(x => x.ProductId == product.Id && x.AvailableQuantity > 0))
+                return false;
+
+            return true;
         }
 
         private bool DefectFilterPredicate(object obj)
