@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using OrderSandbox.Models;
 
 namespace OrderSandbox.Services
@@ -9,28 +11,31 @@ namespace OrderSandbox.Services
     {
         /// <summary>
         /// Проверяет, подходит ли товар под поисковый запрос.
-        /// Должен поддерживать поиск по нескольким словам/фрагментам через пробел,
+        /// Поддерживает поиск по нескольким словам/фрагментам через пробел,
         /// без учёта регистра, как по коду, так и по названию товара.
-        /// </summary>
-        /// <remarks>
-        /// BUG (намеренно): текущая реализация ищет только полное совпадение всей
-        /// строки запроса как одной подстроки. Запрос "парац 500" не найдёт товар
-        /// "Парацетамол 500мг", хотя по требованиям ТЗ должен.
-        /// Кандидату нужно переписать метод так, чтобы каждое слово запроса
-        /// проверялось отдельно (логика "И"), без учёта регистра.
-        /// </remarks>
+        /// </summary>        
         public bool MatchesProduct(ProductModel product, string searchText)
         {
-            if (string.IsNullOrWhiteSpace(searchText))
-                return true;
-
             if (product == null)
                 return false;
+
+            // Пустой или пробельный запрос — считаем, что товар подходит
+            if (string.IsNullOrWhiteSpace(searchText))
+                return true;
 
             var title = product.Title ?? string.Empty;
             var code = product.Code.ToString();
 
-            return title.Contains(searchText) || code.Contains(searchText);
+            // Объединяем код и название в один текст, приводим к верхнему регистру
+            var haystack = (title + " " + code).ToUpperInvariant();
+
+            // Разбиваем запрос на слова по пробелам, убираем пустые элементы
+            var words = searchText
+                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(w => w.ToUpperInvariant());
+
+            // Каждое слово запроса должно встречаться в коде или названии
+            return words.All(word => haystack.Contains(word));
         }
     }
 }

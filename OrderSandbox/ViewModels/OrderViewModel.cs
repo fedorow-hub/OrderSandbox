@@ -296,8 +296,7 @@ namespace OrderSandbox.ViewModels
         }
 
         private bool AddToOrderCanExecute()
-        {
-            //Исправлен баг активной кнопки при не выбранном SelectedSupplierItem и QuantityToAdd <= 0
+        {            
             return SelectedProduct != null && SelectedSupplierItem != null && QuantityToAdd > 0;
         }
 
