@@ -332,6 +332,11 @@ namespace OrderSandbox.ViewModels
                 });
             }
 
+            SelectedSupplierItem.AvailableQuantity -= QuantityToAdd;
+
+            if (OnlyProductsWithStock)
+                _productsView?.Refresh();
+
             RaisePropertyChanged(() => TotalSum);
         }
 
@@ -345,8 +350,20 @@ namespace OrderSandbox.ViewModels
             if (SelectedOrderItem == null)
                 return;
 
-            OrderItems.Remove(SelectedOrderItem);
+            var orderItem = SelectedOrderItem;
+            var priceItem = _allPriceItems.FirstOrDefault(x =>
+                x.ProductId == orderItem.ProductId &&
+                x.SupplierTitle == orderItem.SupplierTitle);
+
+            if (priceItem != null)
+                priceItem.AvailableQuantity += orderItem.Quantity;
+
+            OrderItems.Remove(orderItem);
             SelectedOrderItem = null;
+
+            if (OnlyProductsWithStock)
+                _productsView?.Refresh();
+
             RaisePropertyChanged(() => TotalSum);
         }
     }
