@@ -256,14 +256,23 @@ namespace OrderSandbox.ViewModels
         {
             ErrorMessage = null;
 
-            // BUG (намеренно): здесь нет проверки SelectedSupplierItem на null,
-            // хотя CanExecute это разрешает (см. AddToOrderCanExecute) -
-            // нужно привести в соответствие валидацию и условие доступности кнопки,
-            // а также проверить остаток и кратность размеру упаковки.
-
+            
             var existing = OrderItems.FirstOrDefault(x =>
                 x.ProductId == SelectedProduct.Id &&
                 x.SupplierTitle == SelectedSupplierItem.SupplierTitle);
+
+            if(QuantityToAdd > SelectedSupplierItem.AvailableQuantity)
+            {
+                ErrorMessage = $"У поставщика {SelectedSupplierItem.SupplierTitle} нет такого количества товара, либо уменьшите количество, либо выберите другого поставщика";
+                return;
+            }
+
+            if (QuantityToAdd % SelectedSupplierItem.PackageSize != 0)
+            {
+                ErrorMessage = $"Введите количество, кратное размеру упаковки: {SelectedSupplierItem.PackageSize}";
+                return;
+            }
+
 
             if (existing != null)
             {
