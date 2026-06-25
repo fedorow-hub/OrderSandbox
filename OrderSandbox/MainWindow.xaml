@@ -73,6 +73,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Text="Предложения поставщиков" FontWeight="Bold" Margin="0,0,0,4" />
@@ -98,8 +99,8 @@
                                     Command="{Binding AddToOrderCommand}" />
                         </StackPanel>
 
-                        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="Red"
-                                   TextWrapping="Wrap" Margin="0,30,0,0" VerticalAlignment="Bottom" />
+                        <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="Red"
+                                   TextWrapping="Wrap" Margin="0,4,0,0" />
                     </Grid>
 
                     <!-- Текущий заказ -->
