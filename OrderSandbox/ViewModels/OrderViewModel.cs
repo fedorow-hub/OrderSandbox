@@ -214,6 +214,12 @@ namespace OrderSandbox.ViewModels
                     RaisePropertyChanged(() => DefectsView);
                 }
             }
+            catch
+            {
+                ErrorMessage = "Ошибка загрузки";
+                Products.Clear();
+                Defects.Clear();
+            }
             finally
             {
                 AsyncBase.Close();

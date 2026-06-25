@@ -23,24 +23,13 @@ namespace OrderSandbox.Services
         }
 
         public async Task<List<ProductModel>> LoadProductsAsync()
-        {
-            try
-            {
-                await Task.Delay(600);
+        {            
+            await Task.Delay(600);
+            
+            if (ShouldSimulateFailure())
+                throw new InvalidOperationException("Сервис данных временно недоступен");
 
-                // BUG (намеренно): если при загрузке возникнет исключение, оно тихо
-                // проглатывается и метод вернёт пустой список. Кандидату нужно
-                // убрать пустой catch и корректно сообщить об ошибке вызывающей стороне.
-                if (ShouldSimulateFailure())
-                    throw new InvalidOperationException("Сервис данных временно недоступен");
-
-                return _products;
-            }
-            catch
-            {
-            }
-
-            return new List<ProductModel>();
+            return _products;
         }
 
         public async Task<List<SupplierPriceItemModel>> LoadSupplierPriceListAsync()
