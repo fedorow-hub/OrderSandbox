@@ -1,0 +1,205 @@
+<Window x:Class="OrderSandbox.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:OrderSandbox.ViewModels"
+        Title="Ручной заказ и дефектура — тестовое задание"
+        Height="650" Width="1100"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.DataContext>
+        <vm:OrderViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Строка состояния загрузки -->
+        <Border Grid.Row="0" Background="#FFF3CD" Padding="6"
+                Visibility="{Binding AsyncBase.IsBusy, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{Binding AsyncBase.Description}" FontWeight="Bold" />
+        </Border>
+
+        <TabControl Grid.Row="1" Margin="8">
+
+            <!-- ВКЛАДКА: Ручной заказ -->
+            <TabItem Header="Ручной заказ">
+                <Grid Margin="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Список товаров -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Content="Найти" Margin="4,0,0,0" Command="{Binding SearchCommand}" />
+                            <Button Content="Сброс" Margin="4,0,0,0" Command="{Binding ClearSearchCommand}" />
+                        </StackPanel>
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding ProductsView}"
+                                  SelectedItem="{Binding SelectedProduct}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Код" Binding="{Binding Code}" Width="60" />
+                                <DataGridTextColumn Header="Наименование" Binding="{Binding Title}" Width="*" />
+                                <DataGridTextColumn Header="Производитель" Binding="{Binding Manufacturer}" Width="120" />
+                                <DataGridCheckBoxColumn Header="ЖНВЛП" Binding="{Binding IsVital}" Width="60" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                    <!-- Предложения поставщиков -->
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Предложения поставщиков" FontWeight="Bold" Margin="0,0,0,4" />
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding SupplierOffers}"
+                                  SelectedItem="{Binding SelectedSupplierItem}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Поставщик" Binding="{Binding SupplierTitle}" Width="*" />
+                                <DataGridTextColumn Header="Цена" Binding="{Binding Price, StringFormat=N2}" Width="70" />
+                                <DataGridTextColumn Header="Остаток" Binding="{Binding AvailableQuantity}" Width="60" />
+                                <DataGridTextColumn Header="Уп." Binding="{Binding PackageSize}" Width="40" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                            <TextBlock Text="Кол-во:" VerticalAlignment="Center" />
+                            <TextBox Width="60" Margin="4,0,0,0"
+                                     Text="{Binding QuantityToAdd, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Content="Добавить в заказ" Margin="8,0,0,0"
+                                    Command="{Binding AddToOrderCommand}" />
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="Red"
+                                   TextWrapping="Wrap" Margin="0,30,0,0" VerticalAlignment="Bottom" />
+                    </Grid>
+
+                    <!-- Текущий заказ -->
+                    <Grid Grid.Column="4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Текущий заказ" FontWeight="Bold" Margin="0,0,0,4" />
+
+                        <DataGrid Grid.Row="1" Name="dgOrder"
+                                  ItemsSource="{Binding OrderItems}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Товар" Binding="{Binding ProductTitle}" Width="*" IsReadOnly="True" />
+                                <DataGridTextColumn Header="Поставщик" Binding="{Binding SupplierTitle}" Width="100" IsReadOnly="True" />
+                                <DataGridTextColumn Header="Кол-во" Binding="{Binding Quantity}" Width="60" />
+                                <DataGridTextColumn Header="Сумма" Binding="{Binding Sum, StringFormat=N2}" Width="70" IsReadOnly="True" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0" HorizontalAlignment="Right">
+                            <TextBlock Text="Итого: " FontWeight="Bold" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding TotalSum, StringFormat=N2}" FontWeight="Bold" VerticalAlignment="Center" />
+                            <Button Content="Удалить" Margin="12,0,0,0"
+                                    Command="{Binding RemoveFromOrderCommand}"
+                                    CommandParameter="{Binding SelectedItem, ElementName=dgOrder}" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- ВКЛАДКА: Дефектура -->
+            <TabItem Header="Дефектура">
+                <Grid Margin="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBox Grid.Row="0" Margin="0,0,0,4"
+                                 Text="{Binding DefectSearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding DefectsView}"
+                                  SelectedItem="{Binding SelectedDefect}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Требуется" Binding="{Binding RequiredQuantity}" Width="80" />
+                                <DataGridTextColumn Header="Причина" Binding="{Binding Reason}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Предложения поставщиков по выбранной дефектуре"
+                                   FontWeight="Bold" Margin="0,0,0,4" TextWrapping="Wrap" />
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding SupplierOffers}"
+                                  SelectedItem="{Binding SelectedSupplierItem}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Поставщик" Binding="{Binding SupplierTitle}" Width="*" />
+                                <DataGridTextColumn Header="Цена" Binding="{Binding Price, StringFormat=N2}" Width="70" />
+                                <DataGridTextColumn Header="Остаток" Binding="{Binding AvailableQuantity}" Width="60" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Button Grid.Row="2" Content="Добавить в заказ из дефектуры" Margin="0,6,0,0"
+                                HorizontalAlignment="Left"
+                                Command="{Binding AddToOrderCommand}" />
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="Тестовое задание: WPF mini-module (ManualOrder sandbox)" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
