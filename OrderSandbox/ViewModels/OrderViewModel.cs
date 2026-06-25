@@ -29,6 +29,7 @@ namespace OrderSandbox.ViewModels
 
         private int _quantityToAdd = 1;
         private string _errorMessage;
+        private OrderItemModel _selectedOrderItem;
 
         private ICollectionView _productsView;
         private ICollectionView _defectsView;
@@ -143,6 +144,17 @@ namespace OrderSandbox.ViewModels
             }
         }
 
+        public OrderItemModel SelectedOrderItem
+        {
+            get => _selectedOrderItem;
+            set
+            {
+                _selectedOrderItem = value;
+                RaisePropertyChanged(() => SelectedOrderItem);
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
         public decimal TotalSum => OrderItems.Sum(x => x.Sum);
 
         public OrderViewModel() : this(new MockDataLoadingService())
@@ -177,7 +189,7 @@ namespace OrderSandbox.ViewModels
             new RelayCommand(AddToOrderExecute, AddToOrderCanExecute);
 
         public ICommand RemoveFromOrderCommand =>
-            new RelayCommand(RemoveFromOrderExecute, () => true);
+            new RelayCommand(RemoveFromOrderExecute, () => SelectedOrderItem != null);
 
         private async Task LoadDataAsync()
         {
@@ -308,10 +320,12 @@ namespace OrderSandbox.ViewModels
 
         private void RemoveFromOrderExecute()
         {
-            // Метод принимает выбранный элемент через привязку SelectedItem на View;
-            // в этой заготовке параметр не передаётся через CommandParameter -
-            // кандидату нужно решить, как лучше передать выбранную строку заказа
-            // (через CommandParameter, отдельное свойство SelectedOrderItem и т.д.)
+            if (SelectedOrderItem == null)
+                return;
+
+            OrderItems.Remove(SelectedOrderItem);
+            SelectedOrderItem = null;
+            RaisePropertyChanged(() => TotalSum);
         }
     }
 }

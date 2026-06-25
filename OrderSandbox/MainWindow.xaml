@@ -115,6 +115,7 @@
 
                         <DataGrid Grid.Row="1" Name="dgOrder"
                                   ItemsSource="{Binding OrderItems}"
+                                  SelectedItem="{Binding SelectedOrderItem}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="False">
                             <DataGrid.Columns>
@@ -129,8 +130,7 @@
                             <TextBlock Text="Итого: " FontWeight="Bold" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding TotalSum, StringFormat=N2}" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button Content="Удалить" Margin="12,0,0,0"
-                                    Command="{Binding RemoveFromOrderCommand}"
-                                    CommandParameter="{Binding SelectedItem, ElementName=dgOrder}" />
+                                    Command="{Binding RemoveFromOrderCommand}" />
                         </StackPanel>
                     </Grid>
                 </Grid>
