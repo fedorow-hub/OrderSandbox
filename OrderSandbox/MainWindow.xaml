@@ -107,6 +107,8 @@
 
                         <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="Red"
                                    TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <TextBlock Grid.Row="3" Text="{Binding Message}" Foreground="Blue"
+                                TextWrapping="Wrap" Margin="0,4,0,0" />
                     </Grid>
 
                     <!-- Текущий заказ -->

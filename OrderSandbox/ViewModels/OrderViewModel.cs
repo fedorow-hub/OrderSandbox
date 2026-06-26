@@ -1,14 +1,15 @@
+using OrderSandbox.Commands;
+using OrderSandbox.Models;
+using OrderSandbox.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
-using OrderSandbox.Commands;
-using OrderSandbox.Models;
-using OrderSandbox.Services;
 
 namespace OrderSandbox.ViewModels
 {
@@ -30,6 +31,7 @@ namespace OrderSandbox.ViewModels
 
         private int _quantityToAdd = 1;
         private string _errorMessage;
+        private string _message;
         private OrderItemModel _selectedOrderItem;
 
         private ICollectionView _productsView;
@@ -153,6 +155,16 @@ namespace OrderSandbox.ViewModels
             {
                 _errorMessage = value;
                 RaisePropertyChanged(() => ErrorMessage);
+            }
+        }
+
+        public string Message
+        {
+            get => _message;
+            set
+            {
+                _message = value;
+                RaisePropertyChanged(() => Message);
             }
         }
 
@@ -295,24 +307,41 @@ namespace OrderSandbox.ViewModels
         private void AddToOrderExecute()
         {
             ErrorMessage = null;
+            Message = null;
 
-            
             var existing = OrderItems.FirstOrDefault(x =>
                 x.ProductId == SelectedProduct.Id &&
                 x.SupplierTitle == SelectedSupplierItem.SupplierTitle);
 
+            // Проверка на наличие соответствующего количества товара у поставщика
             if(QuantityToAdd > SelectedSupplierItem.AvailableQuantity)
             {
                 ErrorMessage = $"У поставщика {SelectedSupplierItem.SupplierTitle} нет такого количества товара, либо уменьшите количество, либо выберите другого поставщика";
                 return;
             }
 
+            // Проверка кратности запрашиваемого количества товара кратности упаковки.
+            // Для удобства пользователя и избавления его от необходимости подсчета количества товара в соответствии с кратностью упаковки,
+            // количество товара автоматически уменьшается до достижения кратности с показом пользователю соответствующего сообщения
             if (QuantityToAdd % SelectedSupplierItem.PackageSize != 0)
             {
-                ErrorMessage = $"Введите количество, кратное размеру упаковки: {SelectedSupplierItem.PackageSize}";
-                return;
-            }
+                var divisibility = QuantityToAdd / SelectedSupplierItem.PackageSize;
 
+                // кратность увеличивается на 1, при вычисленной кратности 0 для исключения добавления товара с нулевым количеством
+                if (divisibility == 0) divisibility++;
+                // количество товара автоматически уменьшается для достижения кратности упаковки
+                QuantityToAdd = divisibility * SelectedSupplierItem.PackageSize;
+
+                // повторная проверка на наличие соответствующего количества товара у поставщика
+                // данный вариант возможен при не соответствии оставшегося количества товара кратности упаковки
+                if (QuantityToAdd > SelectedSupplierItem.AvailableQuantity)
+                {
+                    Message = null;
+                    ErrorMessage = $"У поставщика {SelectedSupplierItem.SupplierTitle} оставшееся количество товара меньше кратности упаковки, выберите другого поставщика";
+                    return;
+                }
+                Message = $"Количество изменено автоматически до {QuantityToAdd} для соответствия кратности размеру упаковки";                
+            }
 
             if (existing != null)
             {
@@ -347,6 +376,7 @@ namespace OrderSandbox.ViewModels
 
         private void RemoveFromOrderExecute()
         {
+            Message = null;
             if (SelectedOrderItem == null)
                 return;
 
